@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iymon Asri</title>
+
+    <!-- PWA Meta tags -->
+    <meta name="description" content="Namoz vaqtlari va elektron tasbeh ilovasi">
+    <meta name="theme-color" content="#16a085">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Islamic App">
+
+    <!-- Manifest -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .islamic-font {
+            font-family: 'Amiri', 'Times New Roman', serif;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Install PWA Button -->
+    <div id="install-banner" class="bg-blue-600 text-white p-2 text-center hidden flex flex-col md:flex-row items-center justify-center gap-2">
+        <button id="install-button" class="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded-lg text-sm">
+            📱 Telefoningizga o'rnating
+        </button>
+        <a href="https://t.me/tavhid_risolasi_a" target="_blank" id="telegram-channel" class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg text-sm inline-block">
+            📢 Telegram Kanalimiz
+        </a>
+        <a href="https://t.me/IymonAsriBot" target="_blank" id="telegram-bot" class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg text-sm inline-block">
+            🤖 Telegram Botimiz
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-green-600 text-white p-4 text-center">
+        <h1 class="text-2xl font-bold mb-2">🕌 Iymon Asri</h1>
+        <div id="current-date" class="text-lg"></div>
+        <div id="current-time" class="text-xl font-mono"></div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="flex bg-white shadow-sm">
+        <button id="prayer-tab" class="flex-1 py-3 px-4 text-center font-medium bg-green-600 text-white">
+            🕌 Namoz Vaqtlari
+        </button>
+        <button id="tasbeh-tab" class="flex-1 py-3 px-4 text-center font-medium text-green-600 hover:bg-green-50">
+            📿 Elektron Tasbeh
+        </button>
+    </div>
+
+    <div class="p-4 space-y-4">
+        <!-- Prayer Times Content -->
+        <div id="prayer-content">
+            <!-- City Selector -->
+            <div class="bg-white rounded-lg p-4 shadow-md mb-4">
+                <div class="flex items-center justify-between">
+                    <label class="text-gray-700 font-medium">Shahar:</label>
+                    <select id="city-selector" class="p-2 border border-gray-300 rounded-lg">
+                        <option value="Tashkent">Tashkent</option>
+                        <option value="Samarkand">Samarkand</option>
+                        <option value="Bukhara">Bukhara</option>
+                        <option value="Andijan">Andijan</option>
+                        <option value="Namangan">Namangan</option>
+                        <option value="Fergana">Fergana</option>
+                        <option value="Nukus">Nukus</option>
+                        <option value="Urgench">Urgench</option>
+                        <option value="Karshi">Karshi</option>
+                        <option value="Termez">Termez</option>
+                    </select>
+                </div>
+                <div id="loading-text" class="mt-2 text-center text-gray-500 hidden">
+                    Namoz vaqtlari yuklanmoqda...
+                </div>
+            </div>
+
+            <!-- Current Status -->
+            <div class="bg-white rounded-lg p-4 shadow-md mb-4">
+                <div class="text-center">
+                    <p class="text-gray-600 mb-1">Hozirgi namoz</p>
+                    <p id="current-prayer" class="text-2xl font-bold text-green-600">Bomdod</p>
+                    <p id="current-prayer-time" class="text-gray-500 mb-3">04:45</p>
+
+                    <p class="text-gray-600 mb-1">Keyingi namoz</p>
+                    <p id="next-prayer" class="text-xl font-semibold text-blue-600">Peshin - 12:30</p>
+                </div>
+            </div>
+
+            <!-- Prayer Times List -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="bg-green-600 text-white p-3">
+                    <h3 id="prayer-list-title" class="text-lg font-semibold text-center">Tashkent - Bugungi Namoz
+                        Vaqtlari</h3>
+                </div>
+                <div id="prayer-times-list">
+                    <!-- Prayer times will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasbeh Content -->
+        <div id="tasbeh-content" class="hidden">
+            <!-- Tasbeh Counter -->
+            <div class="bg-white rounded-lg p-6 shadow-md text-center mb-4">
+                <h3 class="text-xl font-semibold mb-4 text-green-600">Elektron Tasbeh</h3>
+
+                <!-- Zikr Selection -->
+                <div class="mb-6">
+                    <select id="zikr-selector" class="w-full p-3 border border-gray-300 rounded-lg text-center">
+                        <option value="subhanallah">Subhanallah (33 marta)</option>
+                        <option value="alhamdulillah">Alhamdulillah (33 marta)</option>
+                        <option value="allahuakbar">Allahu Akbar (34 marta)</option>
+                        <option value="lailahaillallah">La ilaha illa Allah</option>
+                    </select>
+                </div>
+
+                <!-- Arabic Text -->
+                <div class="mb-6 p-4 bg-green-50 rounded-lg">
+                    <p id="arabic-text" class="text-3xl font-bold text-green-800 mb-2 islamic-font">سُبْحَانَ اللهِ</p>
+                    <p id="zikr-translation" class="text-gray-600">Subhanallah (33 marta)</p>
+                </div>
+
+                <!-- Counter Display -->
+                <div class="mb-6">
+                    <div id="tasbeh-count" class="text-6xl font-bold text-green-600 mb-2">0</div>
+                    <div class="text-gray-500">marta aytildi</div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button id="increment-btn"
+                        class="w-full bg-green-600 text-white py-4 px-6 rounded-lg text-xl font-semibold hover:bg-green-700 active:bg-green-800 transition-colors">
+                        📿 Bosing
+                    </button>
+
+                    <button id="reset-btn"
+                        class="w-full bg-gray-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-600 transition-colors">
+                        🔄 Qayta boshlash
+                    </button>
+                </div>
+
+                <!-- Progress indicators -->
+                <div id="progress-indicator" class="mt-4 text-sm text-gray-600 hidden"></div>
+            </div>
+
+            <!-- Quick Reset Options -->
+            <div class="bg-white rounded-lg p-4 shadow-md">
+                <h4 class="font-semibold mb-3 text-gray-700">Tezkor tugma:</h4>
+                <div class="grid grid-cols-3 gap-2">
+                    <button class="quick-set bg-blue-100 text-blue-600 py-2 px-3 rounded text-sm" data-value="33">33
+                        ga</button>
+                    <button class="quick-set bg-blue-100 text-blue-600 py-2 px-3 rounded text-sm" data-value="99">99
+                        ga</button>
+                    <button class="quick-set bg-blue-100 text-blue-600 py-2 px-3 rounded text-sm" data-value="100">100
+                        ga</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let deferredPrompt = null;
+        let currentTime = new Date();
+        let tasbehCount = parseInt(localStorage.getItem('tasbehCount') || '0');
+        let selectedZikr = localStorage.getItem('selectedZikr') || 'subhanallah';
+        let selectedCity = localStorage.getItem('selectedCity') || 'Tashkent';
+        let activeTab = 'prayer';
+        let isLoading = false;
+
+        // Prayer times data
+        let prayerTimes = {
+            fajr: '04:45',
+            sunrise: '06:12',
+            dhuhr: '12:30',
+            asr: '16:45',
+            maghrib: '19:48',
+            isha: '21:15'
+        };
+
+        const prayerNames = {
+            fajr: 'Bomdod',
+            sunrise: 'Quyosh chiqishi',
+            dhuhr: 'Peshin',
+            asr: 'Asr',
+            maghrib: 'Shom',
+            isha: 'Xufton'
+        };
+
+        const prayerIcons = {
+            fajr: '🌅',
+            sunrise: '☀️',
+            dhuhr: '🌞',
+            asr: '🌆',
+            maghrib: '🌇',
+            isha: '🌙'
+        };
+
+        const zikrOptions = {
+            subhanallah: 'سُبْحَانَ اللهِ',
+            alhamdulillah: 'الْحَمْدُ للهِ',
+            allahuakbar: 'اللهُ أَكْبَر',
+            lailahaillallah: 'لَا إِلَهَ إِلَّا اللهُ'
+        };
+
+        const zikrTranslations = {
+            subhanallah: 'Subhanallah (33 marta)',
+            alhamdulillah: 'Alhamdulillah (33 marta)',
+            allahuakbar: 'Allahu Akbar (34 marta)',
+            lailahaillallah: 'La ilaha illa Allah'
+        };
+
+        // DOM elements
+        const installBanner = document.getElementById('install-banner');
+        const installButton = document.getElementById('install-button');
+        const currentDateEl = document.getElementById('current-date');
+        const currentTimeEl = document.getElementById('current-time');
+        const prayerTab = document.getElementById('prayer-tab');
+        const tasbehTab = document.getElementById('tasbeh-tab');
+        const prayerContent = document.getElementById('prayer-content');
+        const tasbehContent = document.getElementById('tasbeh-content');
+        const citySelector = document.getElementById('city-selector');
+        const loadingText = document.getElementById('loading-text');
+        const currentPrayerEl = document.getElementById('current-prayer');
+        const currentPrayerTimeEl = document.getElementById('current-prayer-time');
+        const nextPrayerEl = document.getElementById('next-prayer');
+        const prayerListTitle = document.getElementById('prayer-list-title');
+        const prayerTimesList = document.getElementById('prayer-times-list');
+        const zikrSelector = document.getElementById('zikr-selector');
+        const arabicText = document.getElementById('arabic-text');
+        const zikrTranslation = document.getElementById('zikr-translation');
+        const tasbehCountEl = document.getElementById('tasbeh-count');
+        const incrementBtn = document.getElementById('increment-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const quickSetButtons = document.querySelectorAll('.quick-set');
+
+        // Initialize
+        function init() {
+            // Set initial values
+            citySelector.value = selectedCity;
+            zikrSelector.value = selectedZikr;
+            updateTasbehDisplay();
+            updateZikrDisplay();
+            updateTimeDisplay();
+
+            // Show initial prayer times list
+            updatePrayerTimesDisplay();
+            updateCurrentPrayerDisplay();
+
+            // Fetch fresh prayer times
+            fetchPrayerTimes(selectedCity);
+
+            // Set up event listeners
+            setupEventListeners();
+
+            // Start time updates (every minute)
+            setInterval(updateTimeDisplay, 60000);
+
+            // Auto-refresh prayer times every 6 hours
+            setInterval(() => {
+                console.log('Auto-refreshing prayer times...');
+                fetchPrayerTimes(selectedCity);
+            }, 21600000); // 6 hours = 21600000ms
+
+            // Check for prayer time transitions every minute
+            setInterval(checkPrayerTransition, 60000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // PWA install
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installBanner.classList.remove('hidden');
+            });
+
+            installButton.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        installBanner.classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                }
+            });
+
+            // Tab switching
+            prayerTab.addEventListener('click', () => switchTab('prayer'));
+            tasbehTab.addEventListener('click', () => switchTab('tasbeh'));
+
+            // City selector
+            citySelector.addEventListener('change', (e) => {
+                selectedCity = e.target.value;
+                localStorage.setItem('selectedCity', selectedCity);
+                fetchPrayerTimes(selectedCity);
+            });
+
+            // Zikr selector
+            zikrSelector.addEventListener('change', (e) => {
+                selectedZikr = e.target.value;
+                localStorage.setItem('selectedZikr', selectedZikr);
+                updateZikrDisplay();
+                updateProgressIndicator();
+            });
+
+            // Tasbeh buttons
+            incrementBtn.addEventListener('click', incrementTasbeh);
+            resetBtn.addEventListener('click', resetTasbeh);
+
+            // Quick set buttons
+            quickSetButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const value = parseInt(e.target.dataset.value);
+                    setTasbehCount(value);
+                });
+            });
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            activeTab = tab;
+
+            if (tab === 'prayer') {
+                prayerTab.className = 'flex-1 py-3 px-4 text-center font-medium bg-green-600 text-white';
+                tasbehTab.className = 'flex-1 py-3 px-4 text-center font-medium text-green-600 hover:bg-green-50';
+                prayerContent.classList.remove('hidden');
+                tasbehContent.classList.add('hidden');
+            } else {
+                tasbehTab.className = 'flex-1 py-3 px-4 text-center font-medium bg-green-600 text-white';
+                prayerTab.className = 'flex-1 py-3 px-4 text-center font-medium text-green-600 hover:bg-green-50';
+                tasbehContent.classList.remove('hidden');
+                prayerContent.classList.add('hidden');
+            }
+        }
+
+        // Update time display
+        function updateTimeDisplay() {
+            currentTime = new Date();
+
+            currentDateEl.textContent = currentTime.toLocaleDateString('uz-UZ', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            currentTimeEl.textContent = currentTime.toTimeString().slice(0, 5);
+
+            updateCurrentPrayerDisplay();
+
+            // Check if it's a new day and refresh prayer times
+            const today = currentTime.toDateString();
+            if (localStorage.getItem('lastUpdateDate') !== today) {
+                localStorage.setItem('lastUpdateDate', today);
+                fetchPrayerTimes(selectedCity);
+            }
+        }
+
+        // Fetch prayer times from API
+        async function fetchPrayerTimes(cityName) {
+            isLoading = true;
+            citySelector.disabled = true;
+            loadingText.classList.remove('hidden');
+
+            try {
+                // Get current date for accurate prayer times
+                const today = new Date();
+                const dateString = `${today.getDate().toString().padStart(2, '0')}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getFullYear()}`;
+
+                const response = await fetch(
+                    `https://api.aladhan.com/v1/timingsByCity/${dateString}?city=${cityName}&country=Uzbekistan&method=2`
+                );
+                const data = await response.json();
+
+                if (data.code === 200) {
+                    const timings = data.data.timings;
+
+                    // Convert 24-hour format and clean up times
+                    prayerTimes = {
+                        fajr: timings.Fajr.substring(0, 5),
+                        sunrise: timings.Sunrise.substring(0, 5),
+                        dhuhr: timings.Dhuhr.substring(0, 5),
+                        asr: timings.Asr.substring(0, 5),
+                        maghrib: timings.Maghrib.substring(0, 5),
+                        isha: timings.Isha.substring(0, 5)
+                    };
+
+                    // Save to localStorage for offline access
+                    localStorage.setItem(`prayerTimes_${cityName}`, JSON.stringify(prayerTimes));
+                    localStorage.setItem('lastUpdateDate', today.toDateString());
+
+                    updatePrayerTimesDisplay();
+                    updateCurrentPrayerDisplay();
+
+                    console.log(`Prayer times updated for ${cityName}:`, prayerTimes);
+                } else {
+                    console.error('API returned error:', data.status);
+                    // Try to load from localStorage if API fails
+                    loadPrayerTimesFromStorage(cityName);
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                // Try to load from localStorage if network fails
+                loadPrayerTimesFromStorage(cityName);
+            } finally {
+                isLoading = false;
+                citySelector.disabled = false;
+                loadingText.classList.add('hidden');
+            }
+        }
+
+        // Load prayer times from localStorage (fallback)
+        function loadPrayerTimesFromStorage(cityName) {
+            const savedTimes = localStorage.getItem(`prayerTimes_${cityName}`);
+            if (savedTimes) {
+                prayerTimes = JSON.parse(savedTimes);
+                updatePrayerTimesDisplay();
+                updateCurrentPrayerDisplay();
+                console.log(`Loaded prayer times from storage for ${cityName}`);
+            }
+        }
+
+        // Update prayer times display
+        function updatePrayerTimesDisplay() {
+            prayerListTitle.textContent = `${selectedCity} - Bugungi Namoz Vaqtlari`;
+
+            const currentPrayer = getCurrentPrayer();
+
+            prayerTimesList.innerHTML = '';
+            Object.entries(prayerTimes).forEach(([prayer, time]) => {
+                const isActive = prayer === currentPrayer[0];
+                const div = document.createElement('div');
+                div.className = `flex justify-between items-center p-4 border-b border-gray-100 last:border-b-0 ${isActive ? 'bg-green-50' : ''}`;
+
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">${prayerIcons[prayer]}</span>
+                        <span class="font-medium text-gray-800">${prayerNames[prayer]}</span>
+                    </div>
+                    <span class="font-mono text-lg ${isActive ? 'text-green-600 font-bold' : 'text-gray-600'}">${time}</span>
+                `;
+
+                prayerTimesList.appendChild(div);
+            });
+        }
+
+        // Update current prayer display
+        function updateCurrentPrayerDisplay() {
+            const currentPrayer = getCurrentPrayer();
+            const nextPrayer = getNextPrayer();
+
+            currentPrayerEl.textContent = prayerNames[currentPrayer[0]];
+            currentPrayerTimeEl.textContent = currentPrayer[1];
+            nextPrayerEl.textContent = `${prayerNames[nextPrayer[0]]} - ${nextPrayer[1]}`;
+        }
+
+        // Get current prayer
+        function getCurrentPrayer() {
+            const now = currentTime.toTimeString().slice(0, 5);
+            const times = Object.entries(prayerTimes);
+
+            for (let i = 0; i < times.length; i++) {
+                if (now < times[i][1]) {
+                    return i === 0 ? times[times.length - 1] : times[i - 1];
+                }
+            }
+            return times[times.length - 1];
+        }
+
+        // Get next prayer
+        function getNextPrayer() {
+            const now = currentTime.toTimeString().slice(0, 5);
+            const times = Object.entries(prayerTimes);
+
+            for (let i = 0; i < times.length; i++) {
+                if (now < times[i][1]) {
+                    return times[i];
+                }
+            }
+            return times[0];
+        }
+
+        // Update zikr display
+        function updateZikrDisplay() {
+            arabicText.textContent = zikrOptions[selectedZikr];
+            zikrTranslation.textContent = zikrTranslations[selectedZikr];
+        }
+
+        // Update tasbeh display
+        function updateTasbehDisplay() {
+            tasbehCountEl.textContent = tasbehCount;
+            updateProgressIndicator();
+        }
+
+        // Update progress indicator
+        function updateProgressIndicator() {
+            const indicator = progressIndicator;
+            let message = '';
+
+            if ((selectedZikr === 'subhanallah' || selectedZikr === 'alhamdulillah') && tasbehCount >= 33) {
+                message = "✅ 33 marta to'ldi!";
+            } else if (selectedZikr === 'allahuakbar' && tasbehCount >= 34) {
+                message = "✅ 34 marta to'ldi!";
+            }
+
+            if (message) {
+                indicator.textContent = message;
+                indicator.classList.remove('hidden');
+            } else {
+                indicator.classList.add('hidden');
+            }
+        }
+
+        // Increment tasbeh
+        function incrementTasbeh() {
+            tasbehCount++;
+            localStorage.setItem('tasbehCount', tasbehCount.toString());
+            updateTasbehDisplay();
+        }
+
+        // Reset tasbeh
+        function resetTasbeh() {
+            tasbehCount = 0;
+            localStorage.setItem('tasbehCount', '0');
+            updateTasbehDisplay();
+        }
+
+        // Set tasbeh count
+        function setTasbehCount(count) {
+            tasbehCount = count;
+            localStorage.setItem('tasbehCount', count.toString());
+            updateTasbehDisplay();
+        }
+
+        // Check for prayer time transitions
+        function checkPrayerTransition() {
+            const now = currentTime.toTimeString().slice(0, 5);
+            const currentPrayer = getCurrentPrayer();
+            const lastCheckedPrayer = localStorage.getItem('lastCheckedPrayer');
+
+            // If prayer time has changed, show notification
+            if (lastCheckedPrayer && lastCheckedPrayer !== currentPrayer[0]) {
+                showPrayerNotification(currentPrayer[0]);
+            }
+
+            localStorage.setItem('lastCheckedPrayer', currentPrayer[0]);
+        }
+
+        // Show prayer notification
+        function showPrayerNotification(prayerKey) {
+            const prayerName = prayerNames[prayerKey];
+            const prayerTime = prayerTimes[prayerKey];
+
+            // Simple notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(`${prayerName} vaqti kirdi!`, {
+                    body: `Vaqt: ${prayerTime}`,
+                    icon: './icon-192.png',
+                    tag: 'prayer-time'
+                });
+            } else {
+                // Fallback: browser alert (can be customized)
+                console.log(`${prayerName} vaqti kirdi! (${prayerTime})`);
+            }
+        }
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Request notification permission
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log('Notification permission granted');
+                    }
+                });
+            }
+        }
+
+        // Request notification permission on first load
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            setTimeout(requestNotificationPermission, 2000); // 2 seconds delay
+        });
+
+        // Start the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "Iymon Asri",
+  "short_name": "Islamic App",
+  "description": "Namoz vaqtlari va elektron tasbeh ilovasi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a085",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["lifestyle", "utilities"],
+  "lang": "uz",
+  "screenshots": [
+    {
+      "src": "/screenshot1.png",
+      "sizes": "640x1136",
+      "type": "image/png"
+    }
+  ]
+}
